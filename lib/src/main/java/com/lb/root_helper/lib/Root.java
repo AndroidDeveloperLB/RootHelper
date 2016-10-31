@@ -29,7 +29,7 @@ public class Root {
     }
 
     public boolean hasRoot() {
-        return _hasRoot != null && _hasRoot;
+        return _hasRoot != null && _hasRoot && _rootSession != null && _rootSession.isRunning();
     }
 
     @WorkerThread
@@ -57,7 +57,7 @@ public class Root {
 
     @UiThread
     public void getRoot(final IGotRootListener listener) {
-        if (_hasRoot != null && _hasRoot && _rootSession.isRunning()) {
+        if (hasRoot()) {
             listener.onGotRootResult(true);
             return;
         }
@@ -82,7 +82,7 @@ public class Root {
 
     @Nullable
     public List<String> runCommands(final String... commands) {
-        if (!hasRoot() || commands == null || commands.length == 0)
+        if (commands == null || commands.length == 0 || !hasRoot())
             return null;
         final WaitNotifier waitNotifier = new WaitNotifier();
         _rootSession.addCommand(commands, 0, new Shell.OnCommandResultListener() {

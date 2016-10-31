@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/RootHelper2.iml" filepath="$PROJECT_DIR$/RootHelper2.iml" />
+      <module fileurl="file://$PROJECT_DIR$/RootHelper.iml" filepath="$PROJECT_DIR$/RootHelper.iml" />
       <module fileurl="file://$PROJECT_DIR$/lib/lib.iml" filepath="$PROJECT_DIR$/lib/lib.iml" />
     </modules>
   </component>
