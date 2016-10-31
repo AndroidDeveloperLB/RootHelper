@@ -7,6 +7,7 @@ import android.support.annotation.UiThread;
 import android.support.annotation.WorkerThread;
 
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -37,7 +38,7 @@ public class Root {
         if (_hasRoot != null && _hasRoot && _rootSession.isRunning())
             return true;
         final Handler handler = new Handler(Looper.getMainLooper());
-        final WaitNotifier waitNotifier = new WaitNotifier();
+        final CountDownLatch countDownLatch = new CountDownLatch(1);
         final AtomicBoolean gotRoot = new AtomicBoolean();
         handler.post(new Runnable() {
             @Override
@@ -46,12 +47,16 @@ public class Root {
                     @Override
                     public void onGotRootResult(final boolean hasRoot) {
                         gotRoot.set(hasRoot);
-                        waitNotifier.doNotify();
+                        countDownLatch.countDown();
                     }
                 });
             }
         });
-        waitNotifier.doWait();
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return gotRoot.get();
     }
 
@@ -84,28 +89,33 @@ public class Root {
     public List<String> runCommands(final String... commands) {
         if (commands == null || commands.length == 0 || !hasRoot())
             return null;
-        final WaitNotifier waitNotifier = new WaitNotifier();
+        final CountDownLatch countDownLatch = new CountDownLatch(1);
+        final AtomicReference<List<String>> resultRef = new AtomicReference<>();
         _rootSession.addCommand(commands, 0, new Shell.OnCommandResultListener() {
             @Override
             public void onCommandResult(final int commandCode, final int exitCode, final List<String> output) {
-                waitNotifier.result = output;
+                resultRef.set(output);
                 if (exitCode == 0)
-                    waitNotifier.doNotify();
+                    countDownLatch.countDown();
                 else {
                     // failed to re-use root for future commands, so re-aquire it
                     _hasRoot = null;
                     getRoot(new IGotRootListener() {
                         @Override
                         public void onGotRootResult(final boolean hasRoot) {
-                            waitNotifier.doNotify();
+                            countDownLatch.countDown();
                         }
                     });
                 }
             }
         });
-        waitNotifier.doWait();
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         @SuppressWarnings("unchecked")
-        final List<String> result = (List<String>) waitNotifier.result;
+        final List<String> result = resultRef.get();
         return result;
     }
 }
