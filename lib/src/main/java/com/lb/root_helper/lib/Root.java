@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import eu.chainfire.libsuperuser.Shell;
 
+@SuppressWarnings("WeakerAccess")
 public class Root {
     private static final Root _instance = new Root();
     private Boolean _hasRoot = null;
@@ -85,6 +86,7 @@ public class Root {
         return runCommands(commands.toArray(new String[commands.size()]));
     }
 
+    @WorkerThread
     @Nullable
     public List<String> runCommands(final String... commands) {
         if (commands == null || commands.length == 0 || !hasRoot())
