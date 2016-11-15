@@ -28,5 +28,5 @@ dependencies {
     })
     compile 'eu.chainfire:libsuperuser:1.0.0.201602271131'
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:support-annotations:25.0.0'
+    compile 'com.android.support:support-annotations:25.0.1'
 }
