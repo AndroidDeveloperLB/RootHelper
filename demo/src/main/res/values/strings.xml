@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Demo</string>
+    <string name="intro">This sample shows how you can use Root privilege (on rooted devices) to do something that\'s impossible on non-rooted devices.
+It does it by just getting a list of files inside the path "/data/".
+On non-rooted devices, it will return 0 files, and on rooted devices (given Root privilege), it will return more than 0</string>
+
+
+
+
+</resources>
