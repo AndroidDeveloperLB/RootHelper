@@ -5,6 +5,48 @@ Requirements
 ------------
 MinAPI is 9, and the device has to be rooted in order to perform root operations (obviously...).
 
+Example
+-------
+If you have Android API 11 and above, this will show the recent tasks :
+
+    new Thread(){
+        @Override
+        public void run() {
+            final Root root = Root.getInstance();
+            final boolean gotRoot = root.getRoot();
+            if(gotRoot)
+                root.runCommands("input keyevent " + KeyEvent.KEYCODE_APP_SWITCH);
+        }
+    }.start();
+
+And the result:
+![enter image description here](https://raw.githubusercontent.com/AndroidDeveloperLB/RootHelper/master/extras/demo.gif)
+
+The sample in this project will just show that the count of files in a protected path is positive for root operations, yet 0 for normal API. 
+
+
+How to import via gradle
+------------------------
+Import in gradle using :
+
+root gradle file:
+
+	allprojects {
+		repositories {
+			...
+			maven { url "https://jitpack.io" }
+		}
+	}
+
+your app's gradle file:
+
+	dependencies {
+	        compile 'com.github.AndroidDeveloperLB:RootHelper:#'
+	}
+
+where "#" is the latest release of the library, as shown on [Jitpack's website](https://jitpack.io/#AndroidDeveloperLB/RootHelper/).
+
+
 How to use
 ----------
 You have a global singleton Root:
@@ -27,22 +69,3 @@ After you got root privilege, you can perform root operations, using any of thos
 
 You give them a list of commands to run, and they will return you a list of the output from the commands (or null in case of any error, like missing root privilege).
 
-Example
--------
-If you have Android API 11 and above, this will show the recent tasks :
-
-    new Thread(){
-        @Override
-        public void run() {
-            final Root root = Root.getInstance();
-            final boolean gotRoot = root.getRoot();
-            if(gotRoot)
-                root.runCommands("input keyevent " + KeyEvent.KEYCODE_APP_SWITCH);
-        }
-    }.start();
-
-And the result:
-
-![enter image description here](https://raw.githubusercontent.com/AndroidDeveloperLB/RootHelper/master/extras/demo.gif)
-
-The sample in this project will just show that the count of files in a protected path is positive for root operations, yet 0 for normal API. 
