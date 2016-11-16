@@ -41,4 +41,7 @@ If you have Android API 11 and above, this will show the recent tasks :
         }
     }.start();
 
+And the result:
+![enter image description here](https://raw.githubusercontent.com/AndroidDeveloperLB/RootHelper/master/extras/demo.gif)
+
 The sample in this project will just show that the count of files in a protected path is positive for root operations, yet 0 for normal API. 
