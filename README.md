@@ -25,6 +25,7 @@ And the result:
 
 The sample in this project will just show that the count of files in a protected path is positive for root operations, yet 0 for normal API. 
 
+Note that it's adviced to show the user some kind of progress bar while getting the root privilege, because on some ROMs, it could take some time till the user sees a dialog asking if it's ok to grant your app root privilege.
 
 How to import via gradle
 ------------------------
