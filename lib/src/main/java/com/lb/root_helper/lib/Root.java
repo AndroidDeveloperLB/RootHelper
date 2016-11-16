@@ -2,6 +2,8 @@ package com.lb.root_helper.lib;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.support.annotation.AnyThread;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.UiThread;
 import android.support.annotation.WorkerThread;
@@ -20,20 +22,35 @@ public class Root {
     private Shell.Interactive _rootSession;
 
     public interface IGotRootListener {
+        /**
+         * called when we know if you got root or not
+         *
+         * @param hasRoot true iff you got root.
+         */
         void onGotRootResult(boolean hasRoot);
     }
 
     private Root() {
     }
 
+    @AnyThread
     public static Root getInstance() {
         return _instance;
     }
 
+    /**
+     * @return true iff you currently have root privilege and can perform root operations using this class
+     */
+    @AnyThread
     public boolean hasRoot() {
         return _hasRoot != null && _hasRoot && _rootSession != null && _rootSession.isRunning();
     }
 
+    /**
+     * tries to gain root privilege.
+     *
+     * @return true iff got root
+     */
     @WorkerThread
     public boolean getRoot() {
         if (_hasRoot != null && _hasRoot && _rootSession.isRunning())
@@ -61,8 +78,11 @@ public class Root {
         return gotRoot.get();
     }
 
+    /**
+     * tries to gain root privilege. Will call the listener when it's done
+     */
     @UiThread
-    public void getRoot(final IGotRootListener listener) {
+    public void getRoot(@NonNull final IGotRootListener listener) {
         if (hasRoot()) {
             listener.onGotRootResult(true);
             return;
@@ -81,14 +101,27 @@ public class Root {
                 }));
     }
 
+    /**
+     * perform root operations.
+     *
+     * @return null if error or root not gained. Otherwise, a list of the strings that are the output of the commands
+     */
+    @WorkerThread
     @Nullable
-    public List<String> runCommands(final List<String> commands) {
+    public List<String> runCommands(@NonNull final List<String> commands) {
+        if (commands == null)
+            return null;
         return runCommands(commands.toArray(new String[commands.size()]));
     }
 
+    /**
+     * perform root operations.
+     *
+     * @return null if error or root not gained. Otherwise, a list of the strings that are the output of the commands
+     */
     @WorkerThread
     @Nullable
-    public List<String> runCommands(final String... commands) {
+    public List<String> runCommands(@NonNull final String... commands) {
         if (commands == null || commands.length == 0 || !hasRoot())
             return null;
         final CountDownLatch countDownLatch = new CountDownLatch(1);
