@@ -63,7 +63,7 @@ With it, you first have to gain root privilege from the user, and might take som
 
 The first can only be used in background thread, and the other can be called on the UI thread.
 
-After you got root privilege, you can perform root operations, using any of those :
+After you got root privilege, you can perform root operations (only on background thread), using any of those :
 
     public List<String> runCommands(@NonNull final List<String> commands)
     or
