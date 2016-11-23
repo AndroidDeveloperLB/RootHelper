@@ -1,11 +1,14 @@
 package com.lb.root_helper_demo;
 
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.app.LoaderManager.LoaderCallbacks;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -13,14 +16,16 @@ import android.view.View.OnClickListener;
 import android.widget.Toast;
 
 import com.lb.root_helper.lib.Root;
-import com.lb.root_helper.lib.Root.IGotRootListener;
 
 import java.io.File;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     private static final String PROTECTED_PATH_TO_TEST = "/data/";
+    public static final int LOADER_ID = 1;
     private final Root mRoot = Root.getInstance();
+    private View mProgressBar;
+    private View mRootButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,38 +39,50 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, "files count found on protected path:" + listSize, Toast.LENGTH_SHORT).show();
             }
         });
-        findViewById(R.id.rootButton).setOnClickListener(new OnClickListener() {
+        mProgressBar = findViewById(R.id.progressBar);
+        mRootButton = findViewById(R.id.rootButton);
+        initLoader(false);
+        mRootButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(final View view) {
-                mRoot.getRoot(new IGotRootListener() {
-                    @Override
-                    public void onGotRootResult(final boolean hasRoot) {
-                        if (!hasRoot) {
-                            Toast.makeText(MainActivity.this, "root not acquired, so cannot perform test", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-                        new AsyncTask<Void, Void, Integer>() {
-                            @Override
-                            protected Integer doInBackground(final Void... voids) {
-                                final List<String> result = mRoot.runCommands("ls " + PROTECTED_PATH_TO_TEST);
-                                if (result == null)
-                                    return 0;
-                                Log.d("AppLog", "result of the command:");
-                                for (String line : result)
-                                    Log.d("AppLog", line);
-                                return result.size();
-                            }
-
-                            @Override
-                            protected void onPostExecute(final Integer filesCount) {
-                                super.onPostExecute(filesCount);
-                                Toast.makeText(MainActivity.this, "files count found on protected path:" + filesCount, Toast.LENGTH_SHORT).show();
-                            }
-                        }.execute();
-                    }
-                });
+                initLoader(true);
             }
         });
+    }
+
+    private void initLoader(boolean forceStart) {
+        final LoaderManager loaderManager = getSupportLoaderManager();
+        final RootLoader previousLoader = (RootLoader) (Loader<?>) loaderManager.getLoader(LOADER_ID);
+        if (previousLoader != null && forceStart)
+            loaderManager.destroyLoader(LOADER_ID);
+        mRootButton.setEnabled(true);
+        mProgressBar.setVisibility(View.GONE);
+        if (forceStart || previousLoader != null) {
+            mRootButton.setEnabled(false);
+            mProgressBar.setVisibility(View.VISIBLE);
+            loaderManager.initLoader(LOADER_ID, null, new LoaderCallbacks<Integer>() {
+                @Override
+                public Loader<Integer> onCreateLoader(final int id, final Bundle args) {
+                    return new RootLoader(MainActivity.this);
+                }
+
+                @Override
+                public void onLoadFinished(final Loader<Integer> loader, final Integer result) {
+                    loaderManager.destroyLoader(LOADER_ID);
+                    mRootButton.setEnabled(true);
+                    mProgressBar.setVisibility(View.GONE);
+                    if (result == null)
+                        Toast.makeText(MainActivity.this, "root not acquired, so cannot perform test", Toast.LENGTH_SHORT).show();
+                    else
+                        Toast.makeText(MainActivity.this, "files count found on protected path:" + result, Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onLoaderReset(final Loader<Integer> loader) {
+                }
+            }).forceLoad();
+        }
+
     }
 
     @Override
@@ -96,4 +113,28 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
         return true;
     }
+
+    private static class RootLoader extends AsyncTaskLoader<java.lang.Integer> {
+
+        public RootLoader(final Context context) {
+            super(context);
+        }
+
+        @Override
+        public java.lang.Integer loadInBackground() {
+            final Root root = Root.getInstance();
+            final boolean gotRoot = root.getRoot();
+            if (!gotRoot)
+                return null;
+            final List<String> result = root.runCommands("ls " + PROTECTED_PATH_TO_TEST);
+            if (result == null)
+                return 0;
+            //Log.d("AppLog", "result of the command:");
+            //for (String line : result)
+            //    Log.d("AppLog", line);
+            return result.size();
+        }
+    }
+
+
 }
