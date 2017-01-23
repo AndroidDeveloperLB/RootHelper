@@ -52,7 +52,7 @@ public class Root {
      * @return true iff got root
      */
     @WorkerThread
-    public boolean getRoot() {
+    public synchronized boolean getRoot() {
         if (_hasRoot != null && _hasRoot && _rootSession.isRunning())
             return true;
         final Handler handler = new Handler(Looper.getMainLooper());
@@ -108,7 +108,7 @@ public class Root {
      */
     @WorkerThread
     @Nullable
-    public List<String> runCommands(@NonNull final List<String> commands) {
+    public synchronized List<String> runCommands(@NonNull final List<String> commands) {
         if (commands == null)
             return null;
         return runCommands(commands.toArray(new String[commands.size()]));
@@ -121,7 +121,7 @@ public class Root {
      */
     @WorkerThread
     @Nullable
-    public List<String> runCommands(@NonNull final String... commands) {
+    public synchronized List<String> runCommands(@NonNull final String... commands) {
         if (commands == null || commands.length == 0 || !hasRoot())
             return null;
         final CountDownLatch countDownLatch = new CountDownLatch(1);
