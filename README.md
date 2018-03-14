@@ -1,3 +1,5 @@
+[![Release](https://img.shields.io/github/release/AndroidDeveloperLB/RootHelper.svg?style=flat)](https://jitpack.io/#AndroidDeveloperLB/RootHelper)
+
 # RootHelper
 An extension to use libsuperuser library more easily
 
