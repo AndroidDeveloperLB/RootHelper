@@ -45,7 +45,7 @@ root gradle file:
 your app's gradle file:
 
 	dependencies {
-	        compile 'com.github.AndroidDeveloperLB:RootHelper:#'
+	        implementation 'com.github.AndroidDeveloperLB:RootHelper:#'
 	}
 
 where "#" is the latest release of the library, as shown on [Jitpack's website](https://jitpack.io/#AndroidDeveloperLB/RootHelper/).
