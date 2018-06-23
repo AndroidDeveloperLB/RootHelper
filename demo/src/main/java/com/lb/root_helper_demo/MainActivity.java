@@ -4,11 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.app.LoaderManager.LoaderCallbacks;
-import android.support.v4.content.AsyncTaskLoader;
-import android.support.v4.content.Loader;
-import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -19,6 +14,12 @@ import com.lb.root_helper.lib.Root;
 
 import java.io.File;
 import java.util.List;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.loader.app.LoaderManager;
+import androidx.loader.app.LoaderManager.LoaderCallbacks;
+import androidx.loader.content.AsyncTaskLoader;
+import androidx.loader.content.Loader;
 
 public class MainActivity extends AppCompatActivity {
     private static final String PROTECTED_PATH_TO_TEST = "/data/";
@@ -114,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    private static class RootLoader extends AsyncTaskLoader<java.lang.Integer> {
+    private static class RootLoader extends AsyncTaskLoader<Integer> {
 
         public RootLoader(final Context context) {
             super(context);
