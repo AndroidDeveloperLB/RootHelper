@@ -85,8 +85,8 @@ class MainActivity : AppCompatActivity() {
     private class RootLoader(context: Context) : AsyncTaskLoader<Int>(context) {
 
         override fun loadInBackground(): Int? {
-            val root = Root.instance
-            val gotRoot = root.root
+            val root = Root
+            val gotRoot = root.getRootPrivilege()
             if (!gotRoot)
                 return null
             val result = root.runCommands("ls $PROTECTED_PATH_TO_TEST") ?: return 0

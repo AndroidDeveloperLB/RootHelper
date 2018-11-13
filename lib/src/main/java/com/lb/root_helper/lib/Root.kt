@@ -10,7 +10,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
-class Root private constructor() {
+object Root {
     private var gotRoot: Boolean? = null
     private var rootSession: Shell.Interactive? = null
 
@@ -19,30 +19,30 @@ class Root private constructor() {
      *
      * @return true iff got root
      */
-    val root: Boolean
-        @WorkerThread
-        @Synchronized get() {
-            if (gotRoot != null && gotRoot!! && rootSession!!.isRunning)
-                return true
-            val handler = Handler(Looper.getMainLooper())
-            val countDownLatch = CountDownLatch(1)
-            val gotRoot = AtomicBoolean()
-            handler.post {
-                getRoot(object : IGotRootListener {
-                    override fun onGotRootResult(hasRoot: Boolean) {
-                        gotRoot.set(hasRoot)
-                        countDownLatch.countDown()
-                    }
-                })
-            }
-            try {
-                countDownLatch.await()
-            } catch (e: InterruptedException) {
-                e.printStackTrace()
-            }
-
-            return gotRoot.get()
+    @WorkerThread
+    @Synchronized
+    fun getRootPrivilege(): Boolean {
+        if (gotRoot != null && gotRoot!! && rootSession!!.isRunning)
+            return true
+        val handler = Handler(Looper.getMainLooper())
+        val countDownLatch = CountDownLatch(1)
+        val gotRoot = AtomicBoolean()
+        handler.post {
+            getRootPrivilege(object : IGotRootListener {
+                override fun onGotRootResult(hasRoot: Boolean) {
+                    gotRoot.set(hasRoot)
+                    countDownLatch.countDown()
+                }
+            })
         }
+        try {
+            countDownLatch.await()
+        } catch (e: InterruptedException) {
+            e.printStackTrace()
+        }
+
+        return gotRoot.get()
+    }
 
     interface IGotRootListener {
         /**
@@ -65,7 +65,7 @@ class Root private constructor() {
      * tries to gain root privilege. Will call the listener when it's done
      */
     @UiThread
-    fun getRoot(listener: IGotRootListener) {
+    fun getRootPrivilege(listener: IGotRootListener) {
         if (hasRoot()) {
             listener.onGotRootResult(true)
             return
@@ -110,7 +110,7 @@ class Root private constructor() {
             else {
                 // failed to re-use root for future commands, so re-aquire it
                 gotRoot = null
-                getRoot(object : IGotRootListener {
+                getRootPrivilege(object : IGotRootListener {
                     override fun onGotRootResult(hasRoot: Boolean) {
                         countDownLatch.countDown()
                     }
@@ -127,9 +127,4 @@ class Root private constructor() {
         return result
     }
 
-    companion object {
-        @get:AnyThread
-        @JvmStatic
-        val instance = Root()
-    }
 }

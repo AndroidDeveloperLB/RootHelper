@@ -25,7 +25,7 @@ And the result:
 
 ![enter image description here](https://raw.githubusercontent.com/AndroidDeveloperLB/RootHelper/master/extras/demo.gif)
 
-The sample in this project will just show that the count of files in a protected path is positive for root operations, yet 0 for normal API. 
+The sample in this project will just show that the count of files in a protected path is positive for root operations, yet 0 for normal API.
 
 Note that it's adviced to show the user some kind of progress bar while getting the root privilege, because on some ROMs, it could take some time till the user sees a dialog asking if it's ok to grant your app root privilege.
 
@@ -60,7 +60,7 @@ You have a global singleton Root:
 With it, you first have to gain root privilege from the user, and might take some time. You have 2 options for gaining root privilege:
 
     public boolean getRoot()
-    or    
+    or
     public void getRoot(final IGotRootListener listener)
 
 The first can only be used in background thread, and the other can be called on the UI thread.
