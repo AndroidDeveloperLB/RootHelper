@@ -1,4 +1,6 @@
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion 28
@@ -10,8 +12,7 @@ android {
         versionCode 1
         versionName "1.0"
 
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-
+//        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
@@ -23,14 +24,10 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-//    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
-//        exclude group: 'com.android.support', module: 'support-annotations'
-//    })
-//    implementation 'androidx.legacy:legacy-support-core-utils:1.0.0-alpha3'
-    implementation 'androidx.appcompat:appcompat:1.0.0-beta01'
-//    implementation 'androidx.fragment:fragment:1.0.0-alpha3'
-//    implementation 'androidx.vectordrawable:vectordrawable-animated:1.0.0-alpha3'
-
-//    testCompile 'junit:junit:4.12'
+    implementation 'androidx.appcompat:appcompat:1.0.2'
     implementation project(path: ':lib')
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+}
+repositories {
+    mavenCentral()
 }

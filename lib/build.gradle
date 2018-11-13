@@ -1,4 +1,6 @@
 apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion 28
@@ -27,7 +29,11 @@ dependencies {
 //    })
 //    implementation "com.android.support:support-core-utils:27.1.1"
 
-    implementation 'eu.chainfire:libsuperuser:1.0.0.201602271131'
+    implementation 'eu.chainfire:libsuperuser:1.0.0.201704021214'
 //    testCompile 'junit:junit:4.12'
-    implementation 'androidx.annotation:annotation:1.0.0-alpha3'
+    implementation 'androidx.annotation:annotation:1.0.0'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+}
+repositories {
+    mavenCentral()
 }
