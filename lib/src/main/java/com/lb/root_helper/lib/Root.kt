@@ -14,6 +14,15 @@ object Root {
     private var gotRoot: Boolean? = null
     private var rootSession: Shell.Interactive? = null
 
+    interface GotRootListener {
+        /**
+         * called when we know if you got root or not
+         *
+         * @param hasRoot true iff you got root.
+         */
+        fun onGotRootResult(hasRoot: Boolean)
+    }
+
     /**
      * tries to gain root privilege.
      *
@@ -28,7 +37,7 @@ object Root {
         val countDownLatch = CountDownLatch(1)
         val gotRoot = AtomicBoolean()
         handler.post {
-            getRootPrivilege(object : IGotRootListener {
+            getRootPrivilege(object : GotRootListener {
                 override fun onGotRootResult(hasRoot: Boolean) {
                     gotRoot.set(hasRoot)
                     countDownLatch.countDown()
@@ -44,15 +53,6 @@ object Root {
         return gotRoot.get()
     }
 
-    interface IGotRootListener {
-        /**
-         * called when we know if you got root or not
-         *
-         * @param hasRoot true iff you got root.
-         */
-        fun onGotRootResult(hasRoot: Boolean)
-    }
-
     /**
      * @return true iff you currently have root privilege and can perform root operations using this class
      */
@@ -65,7 +65,7 @@ object Root {
      * tries to gain root privilege. Will call the listener when it's done
      */
     @UiThread
-    fun getRootPrivilege(listener: IGotRootListener) {
+    fun getRootPrivilege(listener: GotRootListener) {
         if (hasRoot()) {
             listener.onGotRootResult(true)
             return
@@ -110,7 +110,7 @@ object Root {
             else {
                 // failed to re-use root for future commands, so re-aquire it
                 gotRoot = null
-                getRootPrivilege(object : IGotRootListener {
+                getRootPrivilege(object : GotRootListener {
                     override fun onGotRootResult(hasRoot: Boolean) {
                         countDownLatch.countDown()
                     }
