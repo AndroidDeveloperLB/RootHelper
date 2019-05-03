@@ -49,7 +49,6 @@ object Root {
         } catch (e: InterruptedException) {
             e.printStackTrace()
         }
-
         return gotRoot.get()
     }
 
@@ -71,13 +70,17 @@ object Root {
             return
         }
         val rootSessionRef = AtomicReference<Shell.Interactive>()
-        rootSessionRef.set(Shell.Builder().useSU().setWantSTDERR(true).setWatchdogTimeout(5).setMinimalLogging(true).open { _, exitCode, _ ->
-            val success = exitCode == Shell.OnCommandResultListener.SHELL_RUNNING
-            if (success)
-                rootSession = rootSessionRef.get()
-            gotRoot = success
-            listener.onGotRootResult(success)
-        })
+        try {
+            rootSessionRef.set(Shell.Builder().useSU().setWantSTDERR(true).setWatchdogTimeout(5).setMinimalLogging(true).open { _, exitCode, _ ->
+                val success = exitCode == Shell.OnCommandResultListener.SHELL_RUNNING
+                if (success)
+                    rootSession = rootSessionRef.get()
+                gotRoot = success
+                listener.onGotRootResult(success)
+            })
+        } catch (E: Exception) {
+            listener.onGotRootResult(false)
+        }
     }
 
     /**
@@ -122,9 +125,7 @@ object Root {
         } catch (e: InterruptedException) {
             e.printStackTrace()
         }
-
         val result = resultRef.get()
         return result
     }
-
 }

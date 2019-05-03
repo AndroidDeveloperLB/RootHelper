@@ -1,6 +1,6 @@
 apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
 
 android {
     compileSdkVersion 28
@@ -24,7 +24,7 @@ dependencies {
 //   https://github.com/Chainfire/libsuperuser https://mvnrepository.com/artifact/eu.chainfire/libsuperuser
     api 'eu.chainfire:libsuperuser:1.0.0.201704021214'
 //    api 'eu.chainfire:libsuperuser:1.0.0.201602271131'
-    implementation 'androidx.annotation:annotation:1.0.0'
+    implementation 'androidx.annotation:annotation:1.0.2'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
 repositories {
