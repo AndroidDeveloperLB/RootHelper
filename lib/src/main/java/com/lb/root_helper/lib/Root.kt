@@ -10,6 +10,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
+@Suppress("unused")
 object Root {
     private var gotRoot: Boolean? = null
     private var rootSession: Shell.Interactive? = null
