@@ -5,11 +5,11 @@ An extension to use libsuperuser library more easily
 
 Requirements
 ------------
-MinAPI is 9, and the device has to be rooted in order to perform root operations (obviously...).
+MinAPI is 14, and the device has to be rooted in order to perform root operations (obviously...).
 
 Example
 -------
-If you have Android API 11 and above, this will show the recent tasks :
+This will show the recent tasks :
 
     new Thread(){
         @Override
