@@ -1,14 +1,10 @@
 package com.lb.root_helper.lib
 
-import android.os.Handler
-import android.os.Looper
-import androidx.annotation.AnyThread
-import androidx.annotation.UiThread
-import androidx.annotation.WorkerThread
+import android.os.*
+import androidx.annotation.*
 import eu.chainfire.libsuperuser.Shell
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicReference
+import java.util.concurrent.atomic.*
 
 @Suppress("unused")
 object Root {
@@ -72,8 +68,8 @@ object Root {
         }
         val rootSessionRef = AtomicReference<Shell.Interactive>()
         try {
-            rootSessionRef.set(Shell.Builder().useSU().setWantSTDERR(true).setWatchdogTimeout(5).setMinimalLogging(true).open { _, exitCode, _ ->
-                val success = exitCode == Shell.OnCommandResultListener.SHELL_RUNNING
+            rootSessionRef.set(Shell.Builder().useSU().setWantSTDERR(true).setWatchdogTimeout(5).setMinimalLogging(true).open { success, reason ->
+                val success = reason == Shell.OnResult.SHELL_RUNNING
                 if (success)
                     rootSession = rootSessionRef.get()
                 gotRoot = success
@@ -107,20 +103,22 @@ object Root {
             return null
         val countDownLatch = CountDownLatch(1)
         val resultRef = AtomicReference<List<String>>()
-        rootSession!!.addCommand(commands, 0) { _, exitCode, output ->
-            resultRef.set(output)
-            if (exitCode == 0)
-                countDownLatch.countDown()
-            else {
-                // failed to re-use root for future commands, so re-aquire it
-                gotRoot = null
-                getRootPrivilege(object : GotRootListener {
-                    override fun onGotRootResult(hasRoot: Boolean) {
-                        countDownLatch.countDown()
-                    }
-                })
+        rootSession!!.addCommand(commands, 0, object : Shell.OnCommandResultListener {
+            override fun onCommandResult(commandCode: Int, exitCode: Int, output: MutableList<String>) {
+                resultRef.set(output)
+                if (exitCode == 0)
+                    countDownLatch.countDown()
+                else {
+                    // failed to re-use root for future commands, so re-aquire it
+                    gotRoot = null
+                    getRootPrivilege(object : GotRootListener {
+                        override fun onGotRootResult(hasRoot: Boolean) {
+                            countDownLatch.countDown()
+                        }
+                    })
+                }
             }
-        }
+        })
         try {
             countDownLatch.await()
         } catch (e: InterruptedException) {

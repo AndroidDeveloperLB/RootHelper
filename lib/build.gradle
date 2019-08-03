@@ -22,7 +22,9 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 //   https://github.com/Chainfire/libsuperuser https://mvnrepository.com/artifact/eu.chainfire/libsuperuser
-    api 'eu.chainfire:libsuperuser:1.0.0.201704021214'
+//    api 'eu.chainfire:libsuperuser:1.0.0.201704021214'
+    api 'eu.chainfire:libsuperuser:1.1.0.201907261845'
+
 //    api 'eu.chainfire:libsuperuser:1.0.0.201602271131'
     implementation 'androidx.annotation:annotation:1.1.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
