@@ -1,7 +1,7 @@
 [![Release](https://img.shields.io/github/release/AndroidDeveloperLB/RootHelper.svg?style=flat)](https://jitpack.io/#AndroidDeveloperLB/RootHelper)
 
 # RootHelper
-An extension to use libsuperuser library more easily
+An extension to use libsu library more easily
 
 Requirements
 ------------
@@ -72,4 +72,5 @@ After you got root privilege, you can perform root operations (only on backgroun
     public List<String> runCommands(@NonNull final String... commands)
 
 You give them a list of commands to run, and they will return you a list of the output from the commands (or null in case of any error, like missing root privilege).
+
 
