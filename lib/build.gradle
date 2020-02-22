@@ -17,13 +17,19 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-//   https://github.com/Chainfire/libsuperuser https://mvnrepository.com/artifact/eu.chainfire/libsuperuser
-//    api 'eu.chainfire:libsuperuser:1.0.0.201704021214'
-    api 'eu.chainfire:libsuperuser:1.1.0.201907261845'
+//    https://github.com/topjohnwu/libsu
+    implementation "com.github.topjohnwu.libsu:core:2.5.1"
 
 //    api 'eu.chainfire:libsuperuser:1.0.0.201602271131'
     implementation 'androidx.annotation:annotation:1.1.0'

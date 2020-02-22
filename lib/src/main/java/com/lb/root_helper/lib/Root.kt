@@ -1,15 +1,28 @@
 package com.lb.root_helper.lib
 
-import android.os.*
-import androidx.annotation.*
-import eu.chainfire.libsuperuser.Shell
+import android.os.Build
+import android.os.Handler
+import android.os.Looper
+import androidx.annotation.AnyThread
+import androidx.annotation.UiThread
+import androidx.annotation.WorkerThread
+import com.topjohnwu.superuser.Shell
+import java.io.InputStream
+import java.nio.charset.Charset
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.atomic.*
+import java.util.concurrent.atomic.AtomicBoolean
 
 @Suppress("unused")
 object Root {
-    private var gotRoot: Boolean? = null
-    private var rootSession: Shell.Interactive? = null
+    private var rootSession: Shell? = null
+
+    private class SuResult(private val succeeded: Boolean, private val resultCode: Int, private val output: MutableList<String>, private val error: MutableList<String>) : Shell.Result() {
+        override fun getCode(): Int = resultCode
+        override fun getOut(): MutableList<String> = output
+        override fun isSuccess(): Boolean = succeeded
+        override fun getErr(): MutableList<String> = error
+    }
+
 
     interface GotRootListener {
         /**
@@ -28,7 +41,7 @@ object Root {
     @WorkerThread
     @Synchronized
     fun getRootPrivilege(): Boolean {
-        if (gotRoot != null && gotRoot!! && rootSession!!.isRunning)
+        if (rootSession?.isRoot == true)
             return true
         val handler = Handler(Looper.getMainLooper())
         val countDownLatch = CountDownLatch(1)
@@ -37,6 +50,8 @@ object Root {
             getRootPrivilege(object : GotRootListener {
                 override fun onGotRootResult(hasRoot: Boolean) {
                     gotRoot.set(hasRoot)
+                    if (hasRoot)
+                        rootSession = Shell.getShell()
                     countDownLatch.countDown()
                 }
             })
@@ -53,9 +68,7 @@ object Root {
      * @return true iff you currently have root privilege and can perform root operations using this class
      */
     @AnyThread
-    fun hasRoot(): Boolean {
-        return gotRoot != null && gotRoot!! && rootSession != null && rootSession!!.isRunning
-    }
+    fun hasRoot(): Boolean = rootSession?.isRoot == true
 
     /**
      * tries to gain root privilege. Will call the listener when it's done
@@ -66,17 +79,9 @@ object Root {
             listener.onGotRootResult(true)
             return
         }
-        val rootSessionRef = AtomicReference<Shell.Interactive>()
-        try {
-            rootSessionRef.set(Shell.Builder().useSU().setWantSTDERR(true).setWatchdogTimeout(5).setMinimalLogging(true).open { success, reason ->
-                val success = reason == Shell.OnResult.SHELL_RUNNING
-                if (success)
-                    rootSession = rootSessionRef.get()
-                gotRoot = success
-                listener.onGotRootResult(success)
-            })
-        } catch (E: Exception) {
-            listener.onGotRootResult(false)
+        Shell.getShell {
+            val success = it.isRoot
+            listener.onGotRootResult(success)
         }
     }
 
@@ -101,30 +106,62 @@ object Root {
     fun runCommands(vararg commands: String): List<String>? {
         if (commands.isEmpty() || !hasRoot())
             return null
-        val countDownLatch = CountDownLatch(1)
-        val resultRef = AtomicReference<List<String>>()
-        rootSession!!.addCommand(commands, 0, object : Shell.OnCommandResultListener {
-            override fun onCommandResult(commandCode: Int, exitCode: Int, output: MutableList<String>) {
-                resultRef.set(output)
-                if (exitCode == 0)
-                    countDownLatch.countDown()
-                else {
-                    // failed to re-use root for future commands, so re-aquire it
-                    gotRoot = null
-                    getRootPrivilege(object : GotRootListener {
-                        override fun onGotRootResult(hasRoot: Boolean) {
-                            countDownLatch.countDown()
-                        }
-                    })
-                }
-            }
-        })
-        try {
-            countDownLatch.await()
-        } catch (e: InterruptedException) {
-            e.printStackTrace()
-        }
-        val result = resultRef.get()
-        return result
+        return Shell.su(*commands).exec().out
     }
+
+    /**
+     * perform root operations.
+     *
+     * @return null if error or root not gained. Otherwise, a list of the strings that are the output of the commands, including errors if exists
+     */
+    @WorkerThread
+    @Synchronized
+    fun runCommand(inputStream: InputStream, vararg commands: String): List<String>? {
+        if (commands.isEmpty() || !hasRoot())
+            return null
+        val process: Process = Runtime.getRuntime().exec(commands)
+        try {
+            process.outputStream.use { outputStream -> inputStream.copyTo(outputStream) }
+        } catch (e: Exception) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                process.destroyForcibly() else process.destroy()
+            throw RuntimeException(e)
+        }
+        process.waitFor()
+        val inputStr = process.inputStream.reader(Charset.defaultCharset()).readLines()
+        val errStr = process.errorStream.reader(Charset.defaultCharset()).readLines()
+        return ArrayList<String>(inputStr.size + errStr.size).apply {
+            addAll(inputStr)
+            addAll(errStr)
+        }
+    }
+
+    /**
+     * perform root operations.
+     *
+     * @return null if error or root not gained. Otherwise, a list of the strings that are the output of the commands, including detailed and specific result
+     */
+    @WorkerThread
+    @Synchronized
+    fun runCommandWithDetailedResult(inputStream: InputStream? = null, vararg commands: String): Shell.Result? {
+        if (commands.isEmpty() || !hasRoot())
+            return null
+        if (inputStream == null)
+            return Shell.su(*commands).exec()
+        val process: Process = Runtime.getRuntime().exec(commands)
+        try {
+            process.outputStream.use { outputStream -> inputStream.copyTo(outputStream) }
+        } catch (e: Exception) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                process.destroyForcibly() else process.destroy()
+            throw RuntimeException(e)
+        }
+        process.waitFor()
+        val inputStr = process.inputStream.reader(Charset.defaultCharset()).readLines().toMutableList()
+        val errStr = process.errorStream.reader(Charset.defaultCharset()).readLines().toMutableList()
+        val exitValue = process.exitValue()
+        val isSucceeded = exitValue == 0
+        return SuResult(isSucceeded, exitValue, inputStr, errStr)
+    }
+
 }
