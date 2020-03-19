@@ -106,7 +106,7 @@ object Root {
     fun runCommands(vararg commands: String): List<String>? {
         if (commands.isEmpty() || !hasRoot())
             return null
-        return Shell.su(*commands).exec().out
+        return Shell.sh(*commands).exec().out
     }
 
     /**
