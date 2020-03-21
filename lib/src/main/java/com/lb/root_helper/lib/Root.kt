@@ -81,6 +81,8 @@ object Root {
         }
         Shell.getShell {
             val success = it.isRoot
+            if (success)
+                rootSession = it
             listener.onGotRootResult(success)
         }
     }
