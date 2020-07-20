@@ -23,7 +23,6 @@ object Root {
         override fun getErr(): MutableList<String> = error
     }
 
-
     interface GotRootListener {
         /**
          * called when we know if you got root or not

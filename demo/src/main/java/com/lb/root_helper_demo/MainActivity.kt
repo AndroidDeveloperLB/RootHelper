@@ -14,20 +14,22 @@ import androidx.loader.app.LoaderManager.LoaderCallbacks
 import androidx.loader.content.AsyncTaskLoader
 import androidx.loader.content.Loader
 import com.lb.root_helper.lib.Root
+import com.topjohnwu.superuser.Shell
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(R.layout.activity_main) {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        if (savedInstanceState == null)
+            Shell.Config.setFlags(Shell.FLAG_MOUNT_MASTER)
         normalApiButton.setOnClickListener {
             val list = File(PROTECTED_PATH_TO_TEST).list()
             val listSize = list?.size ?: 0
             Toast.makeText(this@MainActivity, "files count found on protected path:$listSize", Toast.LENGTH_SHORT).show()
         }
         initLoader(false)
-        rootButton!!.setOnClickListener { initLoader(true) }
+        rootButton.setOnClickListener { initLoader(true) }
     }
 
     private fun initLoader(forceStart: Boolean) {
@@ -35,19 +37,17 @@ class MainActivity : AppCompatActivity() {
         val previousLoader = loaderManager.getLoader<Any>(LOADER_ID) as RootLoader?
         if (previousLoader != null && forceStart)
             loaderManager.destroyLoader(LOADER_ID)
-        rootButton!!.isEnabled = true
+        rootButton.isEnabled = true
         progressBar!!.visibility = View.GONE
         if (forceStart || previousLoader != null) {
-            rootButton!!.isEnabled = false
+            rootButton.isEnabled = false
             progressBar!!.visibility = View.VISIBLE
             loaderManager.initLoader(LOADER_ID, null, object : LoaderCallbacks<Int> {
-                override fun onCreateLoader(id: Int, args: Bundle?): Loader<Int> {
-                    return RootLoader(this@MainActivity)
-                }
+                override fun onCreateLoader(id: Int, args: Bundle?) = RootLoader(this@MainActivity)
 
                 override fun onLoadFinished(loader: Loader<Int>, result: Int?) {
                     loaderManager.destroyLoader(LOADER_ID)
-                    rootButton!!.isEnabled = true
+                    rootButton.isEnabled = true
                     progressBar!!.visibility = View.GONE
                     if (result == null)
                         Toast.makeText(this@MainActivity, "root not acquired, so cannot perform test", Toast.LENGTH_SHORT).show()
@@ -58,7 +58,6 @@ class MainActivity : AppCompatActivity() {
                 override fun onLoaderReset(loader: Loader<Int>) {}
             }).forceLoad()
         }
-
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -76,6 +75,7 @@ class MainActivity : AppCompatActivity() {
         if (url == null)
             return true
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        @Suppress("DEPRECATION")
         intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
         startActivity(intent)
@@ -98,8 +98,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     companion object {
-        private val PROTECTED_PATH_TO_TEST = "/data/"
-        val LOADER_ID = 1
+        private const val PROTECTED_PATH_TO_TEST = "/data/"
+        private const val LOADER_ID = 1
     }
 
 
