@@ -29,7 +29,7 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 //    https://github.com/topjohnwu/libsu
-    api "com.github.topjohnwu.libsu:core:2.5.1"
+    api "com.github.topjohnwu.libsu:core:2.5.2"
 
 //    api 'eu.chainfire:libsuperuser:1.0.0.201602271131'
     implementation 'androidx.annotation:annotation:1.1.0'
