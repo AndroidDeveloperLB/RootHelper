@@ -8,8 +8,6 @@ android {
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 30
-        versionCode 1
-        versionName "1.0"
     }
     buildTypes {
         release {
@@ -29,7 +27,7 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 //    https://github.com/topjohnwu/libsu
-    api "com.github.topjohnwu.libsu:core:2.5.2"
+    api "com.github.topjohnwu.libsu:core:2.6.0"
     implementation 'androidx.annotation:annotation:1.1.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
